@@ -53,6 +53,20 @@ function App() {
     return { high, low };
   };
 
+  const calculateSupportResistance = (data: KlineData[]) => {
+    if (data.length < 10) return { support: 0, resistance: 0 };
+
+    const recentData = data.slice(-10);
+    const pivot = (recentData[0].high + recentData[0].low + recentData[0].close) / 3;
+    const resistance = (2 * pivot) - recentData[0].low;
+    const support = (2 * pivot) - recentData[0].high;
+
+    return {
+      support: Math.min(support, ...recentData.map(d => d.low)),
+      resistance: Math.max(resistance, ...recentData.map(d => d.high))
+    };
+  };
+
   const fetchData = async (retryCount = 0) => {
     try {
       setLoading(true);
@@ -216,6 +230,16 @@ function App() {
                   <div className="flex justify-between text-gray-400">
                     <span>24h Low:</span>
                     <span>${get24HourPrices(data).low.toFixed(2)}</span>
+                  </div>
+                  <div className="mt-4 pt-4 border-t border-gray-600">
+                    <div className="flex justify-between text-green-400">
+                      <span>Resistance:</span>
+                      <span>${calculateSupportResistance(data).resistance.toFixed(2)}</span>
+                    </div>
+                    <div className="flex justify-between text-red-400">
+                      <span>Support:</span>
+                      <span>${calculateSupportResistance(data).support.toFixed(2)}</span>
+                    </div>
                   </div>
                 </div>
               </div>
